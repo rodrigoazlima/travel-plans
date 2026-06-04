@@ -1,0 +1,342 @@
+/* App.jsx — assembles the JSON-driven itinerary into the mobile experience */
+/* eslint-disable */
+const { useState: uS, useRef: uR, useEffect: uE, useMemo: uM, useCallback: uC } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "timelineLayout": "edge",
+  "accent": "#2f5d50",
+  "dark": false,
+  "animate": true
+}/*EDITMODE-END*/;
+
+const ACCENTS = ['#2f5d50', '#b2603a', '#3a4f8a', '#6b4e7d', '#1c1c1c'];
+
+/* ---------------- Adaptive status bar ---------------- */
+function StatusBar({ dark }) {
+  return (
+    <div className={'statusbar ' + (dark ? 'statusbar--dark' : 'statusbar--light')} aria-hidden="true">
+      <span className="statusbar__time">9:41</span>
+      <span className="statusbar__icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7.5" width="3" height="4.5" rx=".6"/><rect x="4.5" y="5" width="3" height="7" rx=".6"/><rect x="9" y="2.5" width="3" height="9.5" rx=".6"/><rect x="13.5" y="0" width="3" height="12" rx=".6"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3C10.1 3 12 3.8 13.4 5.2l1-1C12.8 2.5 10.5 1.4 8 1.4S3.2 2.5 1.6 4.2l1 1C4 3.8 5.9 3 8 3Z"/><path d="M8 6.4c1.3 0 2.4.5 3.2 1.3l1-1C11.1 5.6 9.6 5 8 5s-3.1.6-4.2 1.7l1 1C5.6 6.9 6.7 6.4 8 6.4Z"/><circle cx="8" cy="9.9" r="1.4"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" strokeOpacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4c.7-.3 1.2-1 1.2-2S23.7 4.3 23 4Z" fill="currentColor" fillOpacity=".4"/></svg>
+      </span>
+    </div>
+  );
+}
+
+/* ---------------- Hero ---------------- */
+function Hero({ trip, scrollRef }) {
+  const mediaRef = uR(null);
+  uE(() => {
+    const sc = scrollRef.current; if (!sc) return;
+    const onScroll = () => {
+      const y = sc.scrollTop;
+      if (mediaRef.current && y < 700) {
+        mediaRef.current.style.transform = `translateY(${y * 0.35}px) scale(${1 + y * 0.0004})`;
+      }
+    };
+    sc.addEventListener('scroll', onScroll, { passive: true });
+    return () => sc.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <header className="hero">
+      <div className="hero__media" ref={mediaRef} style={{ height: 620, top: -20 }}>
+        {trip.hero.src
+          ? <img src={trip.hero.src} alt={trip.hero.alt || trip.hero.label}
+                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <Placeholder label={trip.hero.label} height={620} icon="mountain" showLabel={false} />}
+      </div>
+      <div className="hero__scrim" />
+      <div className="hero__top">
+        <span className="hero__chip"><Icon name="calendar" size={14} /> {trip.dates.label}</span>
+        <span className="hero__chip"><Icon name="sunCloud" size={15} /> {trip.weather.low}–{trip.weather.high}{trip.weather.unit}</span>
+      </div>
+      <div className="hero__body">
+        <p className="hero__region">{trip.region}</p>
+        <h1 className="hero__title">{trip.destination}</h1>
+        <p className="hero__tagline">{trip.tagline}</p>
+      </div>
+    </header>
+  );
+}
+
+/* ---------------- Summary card ---------------- */
+function Summary({ trip }) {
+  const cur = trip.currency;
+  return (
+    <div className="summary">
+      <div className="summary__grid">
+        <div className="summary__cell">
+          <span className="summary__k"><Icon name="calendar" size={13} /> Duration</span>
+          <span className="summary__v"><span className="num">{trip.durationDays}</span> days · 2 nights</span>
+        </div>
+        <div className="summary__cell">
+          <span className="summary__k"><Icon name="users" size={13} /> Travelers</span>
+          <span className="summary__v">{trip.travelers.label}</span>
+        </div>
+        <div className="summary__cell">
+          <span className="summary__k"><Icon name="bed" size={13} /> Hotel paid</span>
+          <span className="summary__v"><span className="num">{cur} {trip.budget.hotelPaid.toLocaleString('pt-BR')}</span></span>
+        </div>
+        <div className="summary__cell">
+          <span className="summary__k"><Icon name="wallet" size={13} /> Est. spend</span>
+          <span className="summary__v" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 18 }}>{cur} {trip.budget.estLow.toLocaleString('pt-BR')}–{trip.budget.estHigh.toLocaleString('pt-BR')}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Sticky day nav ---------------- */
+function DayNav({ days, active, onPick, stuck }) {
+  const trackRef = uR(null);
+  uE(() => {
+    const el = trackRef.current?.querySelector('.daypill--active');
+    if (el) el.scrollIntoView ? null : null; // avoid scrollIntoView; rely on layout
+  }, [active]);
+  return (
+    <nav className={'daynav' + (stuck ? ' daynav--stuck' : '')} aria-label="Day navigation">
+      <div className="daynav__track" ref={trackRef}>
+        {days.map(d => (
+          <button key={d.day} className={'daypill' + (active === d.day ? ' daypill--active' : '')}
+                  onClick={() => onPick(d.day)} aria-current={active === d.day}>
+            <span className="daypill__k">Day {d.day}</span>
+            <span className="daypill__v">{d.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/* ---------------- Baby's rhythm reference ---------------- */
+function BabyRhythm({ trip }) {
+  const [open, setOpen] = uS(false);
+  const r = trip.babyRoutine;
+  return (
+    <div className="rhythm">
+      <div className="rhythm__card">
+        <button className="rhythm__head" aria-expanded={open} onClick={() => setOpen(o => !o)} aria-controls="rhythm-body">
+          <span className="rhythm__ic"><Icon name="baby" size={20} /></span>
+          <span className="rhythm__t">
+            <span className="rhythm__title">Baby's daily rhythm</span>
+            <span className="rhythm__sub">The backbone every day is built on</span>
+          </span>
+          <span className="rhythm__chev"><Icon name="chevronDown" size={18} /></span>
+        </button>
+        <div className={'panel' + (open ? ' open' : '')} id="rhythm-body">
+          <div className="panel__inner">
+            <div className="rhythm__list">
+              {r.blocks.map((b, i) => (
+                <div className={'rblock rblock--' + b.mode} key={i}>
+                  <span className="rblock__time">{b.time}</span>
+                  <span className="rblock__dot" />
+                  <span className="rblock__b">
+                    <span className="rblock__label">{b.label}</span>
+                    {b.note && <span className="rblock__note">{b.note}</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="rhythm__rule"><Icon name="info" size={15} /><span>{r.rule}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Budget summary (itemised ranges) ---------------- */
+function Budget({ trip }) {
+  const cur = trip.currency;
+  return (
+    <section className="block" data-screen-label="Budget">
+      <header className="block__head">
+        <p className="eyebrow block__eyebrow">Money</p>
+        <h2 className="block__title">Trip budget</h2>
+        <p className="block__sub">Estimated, end to end. Lodging is already paid; everything else is a range.</p>
+      </header>
+      <div className="budget">
+        <div className="budget__card">
+          {trip.budgetLines.map((b, i) => (
+            <div className="bline" key={i}>
+              <span className="bline__label">{b.label}</span>
+              {b.note && <span className="bline__note">{b.note}</span>}
+              {b.paid && <span className="bline__paid">Paid</span>}
+              <span className="bline__val">{b.value}</span>
+            </div>
+          ))}
+          <div className="budget__total">
+            <span className="lbl">Total estimate</span>
+            <span className="val">{cur} {trip.budget.estLow.toLocaleString('pt-BR')}–{trip.budget.estHigh.toLocaleString('pt-BR')}</span>
+          </div>
+        </div>
+        <p className="budget__note">Lodging {cur} {trip.budget.hotelPaid.toLocaleString('pt-BR')} already paid · ranges leave room for the day.</p>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Travel tips (from alerts) ---------------- */
+function Tips({ trip }) {
+  return (
+    <section className="block" data-screen-label="Travel tips">
+      <header className="block__head">
+        <p className="eyebrow block__eyebrow">Before you go</p>
+        <h2 className="block__title">Know before you go</h2>
+        <p className="block__sub">The non-negotiables for a cold-weather trip with a baby.</p>
+      </header>
+      <div className="stack">
+        {trip.alerts.map((t, i) => (
+          <div className="tipcard" key={i}>
+            <span className="tipcard__ic"><Icon name={t.icon} size={20} /></span>
+            <div>
+              <p className="tipcard__t">{t.title}</p>
+              <p className="tipcard__b">{t.body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Considered & cut ---------------- */
+function Skipped({ trip }) {
+  const [open, setOpen] = uS(false);
+  return (
+    <section className="block" data-screen-label="Not this trip">
+      <header className="block__head">
+        <p className="eyebrow block__eyebrow">Honest cuts</p>
+        <h2 className="block__title">Not on this trip</h2>
+        <p className="block__sub">Worthwhile places that don't fit a baby's pace this time.</p>
+      </header>
+      <div className="stack">
+        <div className="skipped">
+          {(open ? trip.skipped : trip.skipped.slice(0, 3)).map((s, i) => (
+            <div className="skip" key={i}>
+              <span className="skip__x"><Icon name="close" size={12} /></span>
+              <span>
+                <span className="skip__name">{s.name}</span>
+                <span className="skip__reason">{s.reason}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        {trip.skipped.length > 3 && (
+          <button className="expandbtn" style={{ flex: 'none' }} aria-expanded={open} onClick={() => setOpen(o => !o)}>
+            {open ? 'Show fewer' : `Show all ${trip.skipped.length}`} <Icon name="chevronDown" size={16} />
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- App ---------------- */
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const trip = window.TRIP;
+  const scrollRef = uR(null);
+  const dayRefs = uR({});
+  const [active, setActive] = uS(1);
+  const [stuck, setStuck] = uS(false);
+  const [lb, setLb] = uS(null);
+
+  const registerRef = uC((day, el) => { if (el) dayRefs.current[day] = el; }, []);
+  const openLightbox = uC((images, start, title) => setLb({ images, start, title }), []);
+
+  // scroll spy + stuck nav
+  uE(() => {
+    const sc = scrollRef.current; if (!sc) return;
+    const onScroll = () => {
+      setStuck(sc.scrollTop > 360);
+      const probe = sc.scrollTop + 140;
+      let cur = 1;
+      trip.days.forEach(d => {
+        const el = dayRefs.current[d.day];
+        if (el && el.offsetTop <= probe) cur = d.day;
+      });
+      setActive(cur);
+    };
+    sc.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => sc.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const pickDay = uC((day) => {
+    const el = dayRefs.current[day];
+    const sc = scrollRef.current;
+    if (el && sc) sc.scrollTo({ top: el.offsetTop - 56, behavior: 'smooth' });
+  }, []);
+
+  // accent → derived vars (theme-aware via color-mix on --surface)
+  const accentVars = uM(() => {
+    const a = t.accent;
+    return {
+      '--accent': a,
+      '--accent-ink': t.dark ? `color-mix(in srgb, ${a} 55%, white)` : `color-mix(in srgb, ${a} 80%, black)`,
+      '--accent-soft': `color-mix(in srgb, ${a} 14%, var(--surface))`,
+      '--accent-tint': `color-mix(in srgb, ${a} 8%, var(--surface))`,
+    };
+  }, [t.accent, t.dark]);
+
+  // scale phone to fit viewport
+  const [scale, setScale] = uS(1);
+  uE(() => {
+    const fit = () => {
+      const s = Math.min((window.innerWidth - 24) / 390, (window.innerHeight - 24) / 844, 1.15);
+      setScale(s);
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+
+  return (
+    <div className="stage">
+    <div className="phone" style={{ transform: `scale(${scale})` }}>
+      <div className="phone__island" />
+      <StatusBar dark={stuck || t.dark} />
+      <div className="phone__home" />
+    <div className="app" data-theme={t.dark ? 'dark' : 'light'} style={accentVars}>
+      <div className="scroll" ref={scrollRef}>
+        <Hero trip={trip} scrollRef={scrollRef} />
+        <Summary trip={trip} />
+        <div style={{ height: 18 }} />
+        <DayNav days={trip.days} active={active} onPick={pickDay} stuck={stuck} />
+        {trip.days.map(d => (
+          <DaySection key={d.day} day={d} cur={trip.currency} layout={t.timelineLayout}
+                      openLightbox={openLightbox} animate={t.animate} registerRef={registerRef} />
+        ))}
+        <BabyRhythm trip={trip} />
+        <Budget trip={trip} />
+        <Tips trip={trip} />
+        <Skipped trip={trip} />
+        <footer className="footer">
+          <p className="footer__mark">{trip.destination}</p>
+          <p className="footer__sub">{trip.region} · {trip.dates.label}<br />Have a wonderful trip.</p>
+        </footer>
+        <div style={{ height: 24 }} />
+      </div>
+
+      {lb && <Lightbox images={lb.images} start={lb.start} title={lb.title} onClose={() => setLb(null)} />}
+    </div>
+    </div>
+
+      <TweaksPanel>
+        <TweakSection label="Timeline layout" />
+        <TweakRadio label="Style" value={t.timelineLayout}
+                    options={[{ value: 'edge', label: 'Edge' }, { value: 'right', label: 'Spine' }, { value: 'center', label: 'Center' }]}
+                    onChange={(v) => setTweak('timelineLayout', v)} />
+        <TweakSection label="Theme" />
+        <TweakColor label="Accent" value={t.accent} options={ACCENTS} onChange={(v) => setTweak('accent', v)} />
+        <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak('dark', v)} />
+        <TweakToggle label="Entrance animation" value={t.animate} onChange={(v) => setTweak('animate', v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
