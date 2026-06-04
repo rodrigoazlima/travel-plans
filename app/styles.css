@@ -149,7 +149,7 @@
 }
 
 /* ============================ LANG PICKER =============================== */
-.langpicker { position: relative; }
+.langpicker { position: relative; pointer-events: auto; }
 .langpicker__btn { gap: 6px; cursor: pointer; }
 .langpicker__drop {
   position: absolute; top: calc(100% + 8px); right: 0;
