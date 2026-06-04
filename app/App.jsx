@@ -335,6 +335,7 @@ function App() {
         <Budget trip={trip} lang={lang} />
         <Tips trip={trip} lang={lang} />
         <Skipped trip={trip} lang={lang} />
+        <ExportSection trip={trip} lang={lang} />
         <footer className="footer">
           <p className="footer__mark">{trip.destination}</p>
           <p className="footer__sub">{trip.region} · {trip.dates.label}<br />{t('haveWonderful', lang)}</p>

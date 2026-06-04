@@ -91,6 +91,17 @@ const TX = {
   /* footer */
   haveWonderful: { en: "Have a wonderful trip.", pt: "Boa viagem." },
 
+  /* export */
+  exportLabel:   { en: "Take it with you",      pt: "Leve com você" },
+  exportTitle:   { en: "Export itinerary",       pt: "Exportar roteiro" },
+  exportSub:     { en: "Add all stops to your calendar or download as a formatted document.", pt: "Adicione todas as paradas ao seu calendário ou baixe como documento formatado." },
+  exportGcal:    { en: "Google Calendar",        pt: "Google Calendar" },
+  exportOutlook: { en: "Outlook / iCal",         pt: "Outlook / iCal" },
+  exportMd:      { en: "Markdown",               pt: "Markdown" },
+  exportGcalSub: { en: "Download & import .ics", pt: "Baixe e importe o .ics" },
+  exportIcsSub:  { en: "Download .ics file",     pt: "Baixar arquivo .ics" },
+  exportMdSub:   { en: "Download .md file",      pt: "Baixar arquivo .md" },
+
   /* tweaks */
   tlLayout:      { en: "Timeline layout",      pt: "Estilo do timeline" },
   styleLabel:    { en: "Style",                pt: "Estilo" },
