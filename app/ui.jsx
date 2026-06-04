@@ -50,7 +50,12 @@ function Gallery({ images, height = 200, onOpen }) {
     const el = ref.current; if (!el) return;
     setIdx(Math.round(el.scrollLeft / el.clientWidth));
   }, []);
+  const go = useCallback((dir) => {
+    const el = ref.current; if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
+  }, []);
   if (!images || !images.length) return <Placeholder label="No photos yet" height={height} />;
+  const multi = images.length > 1;
   return (
     <div className="gallery">
       <div className="gallery__strip" ref={ref} onScroll={onScroll}>
@@ -61,7 +66,17 @@ function Gallery({ images, height = 200, onOpen }) {
           </div>
         ))}
       </div>
-      {images.length > 1 && (
+      {multi && idx > 0 && (
+        <button className="gallery__nav gallery__nav--prev" onClick={(e) => { e.stopPropagation(); go(-1); }} aria-label="Previous photo">
+          <Icon name="chevronDown" size={18} style={{ transform: 'rotate(90deg)' }} />
+        </button>
+      )}
+      {multi && idx < images.length - 1 && (
+        <button className="gallery__nav gallery__nav--next" onClick={(e) => { e.stopPropagation(); go(1); }} aria-label="Next photo">
+          <Icon name="chevronDown" size={18} style={{ transform: 'rotate(-90deg)' }} />
+        </button>
+      )}
+      {multi && (
         <>
           <div className="gallery__dots">
             {images.map((_, i) => <span key={i} className={'gallery__dot' + (i === idx ? ' on' : '')} />)}

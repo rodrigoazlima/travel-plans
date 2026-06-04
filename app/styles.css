@@ -469,6 +469,20 @@
   display: flex; gap: 5px; justify-content: center; pointer-events: none; }
 .gallery__dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.55); transition: all .25s; }
 .gallery__dot.on { width: 16px; border-radius: 3px; background: #fff; }
+.gallery__nav {
+  position: absolute; top: 50%; z-index: 3;
+  transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,28,24,0.52); color: #fff;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: none; cursor: pointer;
+  transition: background .18s, opacity .18s;
+  opacity: 0.85;
+}
+.gallery__nav:hover { background: rgba(20,28,24,0.78); opacity: 1; }
+.gallery__nav--prev { left: 10px; }
+.gallery__nav--next { right: 10px; }
 .gallery__count { position: absolute; bottom: 11px; right: 11px; z-index: 2;
   padding: 3px 9px; border-radius: 999px; background: rgba(20,28,24,0.55); color: #fff;
   font-size: 11px; font-weight: 700; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
