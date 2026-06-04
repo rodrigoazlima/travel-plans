@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "homepage": "https://rodrigoazlima.github.io/travel-plans",
   "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
     "predeploy": "echo 'Pre-deploy step complete'",
     "deploy": "gh-pages -d ."
   },

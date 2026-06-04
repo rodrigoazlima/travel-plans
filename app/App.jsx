@@ -1,4 +1,4 @@
-/* App.jsx — assembles the JSON-driven itinerary into the mobile experience */
+/* App.jsx — assembles the JSON-driven itinerary */
 /* eslint-disable */
 const { useState: uS, useRef: uR, useEffect: uE, useMemo: uM, useCallback: uC } = React;
 
@@ -10,20 +10,6 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 const ACCENTS = ['#2f5d50', '#b2603a', '#3a4f8a', '#6b4e7d', '#1c1c1c'];
-
-/* ---------------- Adaptive status bar ---------------- */
-function StatusBar({ dark }) {
-  return (
-    <div className={'statusbar ' + (dark ? 'statusbar--dark' : 'statusbar--light')} aria-hidden="true">
-      <span className="statusbar__time">9:41</span>
-      <span className="statusbar__icons">
-        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7.5" width="3" height="4.5" rx=".6"/><rect x="4.5" y="5" width="3" height="7" rx=".6"/><rect x="9" y="2.5" width="3" height="9.5" rx=".6"/><rect x="13.5" y="0" width="3" height="12" rx=".6"/></svg>
-        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3C10.1 3 12 3.8 13.4 5.2l1-1C12.8 2.5 10.5 1.4 8 1.4S3.2 2.5 1.6 4.2l1 1C4 3.8 5.9 3 8 3Z"/><path d="M8 6.4c1.3 0 2.4.5 3.2 1.3l1-1C11.1 5.6 9.6 5 8 5s-3.1.6-4.2 1.7l1 1C5.6 6.9 6.7 6.4 8 6.4Z"/><circle cx="8" cy="9.9" r="1.4"/></svg>
-        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" strokeOpacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4c.7-.3 1.2-1 1.2-2S23.7 4.3 23 4Z" fill="currentColor" fillOpacity=".4"/></svg>
-      </span>
-    </div>
-  );
-}
 
 /* ---------------- Hero ---------------- */
 function Hero({ trip, scrollRef }) {
@@ -287,24 +273,7 @@ function App() {
     };
   }, [tw.accent, tw.dark]);
 
-  // scale phone to fit viewport
-  const [scale, setScale] = uS(1);
-  uE(() => {
-    const fit = () => {
-      const s = Math.min((window.innerWidth - 24) / 390, (window.innerHeight - 24) / 844, 1.15);
-      setScale(s);
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    return () => window.removeEventListener('resize', fit);
-  }, []);
-
   return (
-    <div className="stage">
-    <div className="phone" style={{ transform: `scale(${scale})` }}>
-      <div className="phone__island" />
-      <StatusBar dark={stuck || tw.dark} />
-      <div className="phone__home" />
     <div className="app" data-theme={tw.dark ? 'dark' : 'light'} style={accentVars}>
       <div className="scroll" ref={scrollRef}>
         <Hero trip={trip} scrollRef={scrollRef} />
@@ -327,8 +296,6 @@ function App() {
       </div>
 
       {lb && <Lightbox images={lb.images} start={lb.start} title={lb.title} onClose={() => setLb(null)} />}
-    </div>
-    </div>
 
       <TweaksPanel>
         <TweakSection label={t('tlLayout', lang)} />
