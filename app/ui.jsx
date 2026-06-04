@@ -141,16 +141,17 @@ function MiniMap({ coords, title, expanded }) {
 }
 
 /* ---- Badge pills ---- */
-function BadgeRow({ items }) {
+function BadgeRow({ items, lang = 'en' }) {
   if (!items || !items.length) return null;
   return (
     <div className="badges">
       {items.map(b => {
         const meta = BADGES[b]; if (!meta) return null;
         const warn = b === 'stroller-no' || b === 'cold';
+        const label = t('badge_' + b, lang) || meta.label;
         return (
           <span className={'badge' + (warn ? ' badge--warn' : '')} key={b}>
-            <Icon name={meta.icon} size={14} /> {meta.label}
+            <Icon name={meta.icon} size={14} /> {label}
           </span>
         );
       })}

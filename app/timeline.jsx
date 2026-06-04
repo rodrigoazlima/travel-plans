@@ -15,12 +15,12 @@ function Stars({ n }) {
   );
 }
 
-function DetailGrid({ d }) {
+function DetailGrid({ d, lang = 'en' }) {
   const rows = [
-    ['clock', 'Hours', d.hours],
-    ['wallet', 'Price', d.ticket],
-    ['parking', 'Parking', d.parking],
-    ['accessible', 'Access', d.accessibility],
+    ['clock', t('detHours', lang), d.hours],
+    ['wallet', t('detPrice', lang), d.ticket],
+    ['parking', t('detParking', lang), d.parking],
+    ['accessible', t('detAccess', lang), d.accessibility],
   ].filter(r => r[2]);
   return (
     <div className="detail-grid">
@@ -32,7 +32,7 @@ function DetailGrid({ d }) {
       ))}
       {d.babyFriendly && (
         <div className="detail detail--full">
-          <span className="detail__k"><Icon name="baby" size={13} /> With a baby</span>
+          <span className="detail__k"><Icon name="baby" size={13} /> {t('detBaby', lang)}</span>
           <span className="detail__v">{d.babyFriendly}</span>
         </div>
       )}
@@ -41,7 +41,7 @@ function DetailGrid({ d }) {
 }
 
 /* ---- quiet rest beat: nap / drive / evening routine ---- */
-function RestRow({ act }) {
+function RestRow({ act, lang = 'en' }) {
   const [open, setOpen] = useS(false);
   return (
     <article className={'tl-item tl-item--seen tl-item--rest tl-item--' + act.mode} data-time={act.time}>
@@ -52,7 +52,7 @@ function RestRow({ act }) {
         <span className="rest__txt">
           <span className="rest__top">
             <span className="rest__title">{act.title}</span>
-            {act.mandatory && <span className="rest__tag">Mandatory</span>}
+            {act.mandatory && <span className="rest__tag">{t('mandatory', lang)}</span>}
           </span>
           <span className="rest__loc">{act.time} · {act.location}</span>
           <span className={'rest__note' + (open ? ' open' : '')}>{act.note}</span>
@@ -64,7 +64,7 @@ function RestRow({ act }) {
 }
 
 /* ---- full stop: outing or meal ---- */
-function FullCard({ act, cur, openLightbox, animate }) {
+function FullCard({ act, cur, openLightbox, animate, lang = 'en' }) {
   const [open, setOpen] = useS(false);
   const cat = CATEGORY[act.category] || { icon: 'pin' };
   const ref = useR(null);
@@ -92,7 +92,7 @@ function FullCard({ act, cur, openLightbox, animate }) {
       <div className="tl-item__time" aria-hidden="true">{act.time}</div>
       <div className={'card' + (animate ? '' : ' in')} ref={ref}>
         <div className="card__media">
-          <span className="card__cat"><Icon name={cat.icon} size={13} /> {act.category}</span>
+          <span className="card__cat"><Icon name={cat.icon} size={13} /> {t('cat_' + act.category, lang)}</span>
           <span className={'card__cost' + (act.cost === 0 ? ' card__cost--free' : '')}>{fmtMoney(cur, act.cost)}</span>
           <Gallery images={imgs} height={188} onOpen={(i) => openLightbox(imgs, i, act.title)} />
         </div>
@@ -129,7 +129,7 @@ function FullCard({ act, cur, openLightbox, animate }) {
 
         <div className="card__foot">
           <button className="expandbtn" aria-expanded={open} onClick={() => setOpen(o => !o)} aria-controls={pid}>
-            {open ? 'Hide details' : 'View details'} <Icon name="chevronDown" size={16} />
+            {open ? t('hideDetails', lang) : t('viewDetails', lang)} <Icon name="chevronDown" size={16} />
           </button>
           <button className="iconbtn" aria-label={`Open map for ${act.location}`}
                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${act.coords.lat},${act.coords.lng}`, '_blank', 'noopener')}>
@@ -142,43 +142,43 @@ function FullCard({ act, cur, openLightbox, animate }) {
             <div className="panel__pad">
               {act.whyHere && (
                 <div className="why">
-                  <span className="why__k"><Icon name="info" size={13} /> Why it fits here</span>
+                  <span className="why__k"><Icon name="info" size={13} /> {t('whyItFits', lang)}</span>
                   <p className="why__b">{act.whyHere}</p>
                 </div>
               )}
 
               {act.whatToOrder && act.whatToOrder.length > 0 && (
                 <>
-                  <div className="section-label"><Icon name="utensils" size={13} /> What to order</div>
+                  <div className="section-label"><Icon name="utensils" size={13} /> {t('whatToOrder', lang)}</div>
                   <div className="bring">{act.whatToOrder.map(x => <span key={x}>{x}</span>)}</div>
                 </>
               )}
 
-              <div className="section-label"><Icon name="info" size={13} /> Practical info</div>
-              <DetailGrid d={d} />
+              <div className="section-label"><Icon name="info" size={13} /> {t('practicalInfo', lang)}</div>
+              <DetailGrid d={d} lang={lang} />
 
               {d.bestTime && (
                 <>
-                  <div className="section-label"><Icon name="clock" size={13} /> Best time</div>
+                  <div className="section-label"><Icon name="clock" size={13} /> {t('bestTime', lang)}</div>
                   <p className="card__desc" style={{ paddingLeft: 0 }}>{d.bestTime}</p>
                 </>
               )}
 
               {d.bring && d.bring.length > 0 && (
                 <>
-                  <div className="section-label"><Icon name="shield" size={13} /> What to bring</div>
+                  <div className="section-label"><Icon name="shield" size={13} /> {t('whatToBring', lang)}</div>
                   <div className="bring">{d.bring.map(x => <span key={x}>{x}</span>)}</div>
                 </>
               )}
 
               {d.tips && d.tips.length > 0 && (
                 <>
-                  <div className="section-label"><Icon name="star" size={13} /> Notes</div>
-                  <ul className="tips-list">{d.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+                  <div className="section-label"><Icon name="star" size={13} /> {t('notesLabel', lang)}</div>
+                  <ul className="tips-list">{d.tips.map((tip, i) => <li key={i}>{tip}</li>)}</ul>
                 </>
               )}
 
-              <div className="section-label"><Icon name="map" size={13} /> Location</div>
+              <div className="section-label"><Icon name="map" size={13} /> {t('locationLabel', lang)}</div>
               <MiniMap coords={act.coords} title={act.location} expanded />
             </div>
           </div>
@@ -189,10 +189,10 @@ function FullCard({ act, cur, openLightbox, animate }) {
 }
 
 function TimelineItem(props) {
-  return props.act.kind === 'rest' ? <RestRow act={props.act} /> : <FullCard {...props} />;
+  return props.act.kind === 'rest' ? <RestRow act={props.act} lang={props.lang} /> : <FullCard {...props} />;
 }
 
-function DaySection({ day, cur, layout, openLightbox, animate, registerRef }) {
+function DaySection({ day, cur, layout, openLightbox, animate, registerRef, lang = 'en' }) {
   const progRef = useR(null);
   const wrapRef = useR(null);
 
@@ -217,20 +217,20 @@ function DaySection({ day, cur, layout, openLightbox, animate, registerRef }) {
   return (
     <section className="day" ref={(el) => registerRef(day.day, el)} data-day={day.day} data-screen-label={`Day ${day.day}`}>
       <header className="day__head">
-        <span className="day__num">Day {day.day}</span>
+        <span className="day__num">{t('day', lang)} {day.day}</span>
         <h2 className="day__title">{day.label}</h2>
-        <span className="day__date">{day.activities.filter(a => a.kind === 'full').length} stops</span>
+        <span className="day__date">{t('stops', lang, day.activities.filter(a => a.kind === 'full').length)}</span>
       </header>
       <div className="timeline" data-layout={layout} ref={wrapRef}>
         <div className="timeline__spine">
           <div className="timeline__progress" ref={progRef} style={{ height: 0 }} />
         </div>
         {day.activities.map((act, i) => (
-          <TimelineItem key={i} act={act} cur={cur} openLightbox={openLightbox} animate={animate} />
+          <TimelineItem key={i} act={act} cur={cur} openLightbox={openLightbox} animate={animate} lang={lang} />
         ))}
       </div>
     </section>
   );
 }
 
-Object.assign(window, { TimelineItem, FullCard, RestRow, DaySection, Stars });
+Object.assign(window, { TimelineItem, FullCard, RestRow, DaySection, Stars, DetailGrid });

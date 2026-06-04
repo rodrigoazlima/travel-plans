@@ -62,25 +62,25 @@ function Hero({ trip, scrollRef }) {
 }
 
 /* ---------------- Summary card ---------------- */
-function Summary({ trip }) {
+function Summary({ trip, lang = 'en' }) {
   const cur = trip.currency;
   return (
     <div className="summary">
       <div className="summary__grid">
         <div className="summary__cell">
-          <span className="summary__k"><Icon name="calendar" size={13} /> Duration</span>
-          <span className="summary__v"><span className="num">{trip.durationDays}</span> days · 2 nights</span>
+          <span className="summary__k"><Icon name="calendar" size={13} /> {t('duration', lang)}</span>
+          <span className="summary__v"><span className="num">{trip.durationDays}</span> {lang === 'pt' ? 'dias · 2 noites' : 'days · 2 nights'}</span>
         </div>
         <div className="summary__cell">
-          <span className="summary__k"><Icon name="users" size={13} /> Travelers</span>
+          <span className="summary__k"><Icon name="users" size={13} /> {t('travelers', lang)}</span>
           <span className="summary__v">{trip.travelers.label}</span>
         </div>
         <div className="summary__cell">
-          <span className="summary__k"><Icon name="bed" size={13} /> Hotel paid</span>
+          <span className="summary__k"><Icon name="bed" size={13} /> {t('hotelPaid', lang)}</span>
           <span className="summary__v"><span className="num">{cur} {trip.budget.hotelPaid.toLocaleString('pt-BR')}</span></span>
         </div>
         <div className="summary__cell">
-          <span className="summary__k"><Icon name="wallet" size={13} /> Est. spend</span>
+          <span className="summary__k"><Icon name="wallet" size={13} /> {t('estSpend', lang)}</span>
           <span className="summary__v" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 18 }}>{cur} {trip.budget.estLow.toLocaleString('pt-BR')}–{trip.budget.estHigh.toLocaleString('pt-BR')}</span>
         </div>
       </div>
@@ -89,7 +89,7 @@ function Summary({ trip }) {
 }
 
 /* ---------------- Sticky day nav ---------------- */
-function DayNav({ days, active, onPick, stuck }) {
+function DayNav({ days, active, onPick, stuck, lang = 'en' }) {
   const trackRef = uR(null);
   uE(() => {
     const el = trackRef.current?.querySelector('.daypill--active');
@@ -101,7 +101,7 @@ function DayNav({ days, active, onPick, stuck }) {
         {days.map(d => (
           <button key={d.day} className={'daypill' + (active === d.day ? ' daypill--active' : '')}
                   onClick={() => onPick(d.day)} aria-current={active === d.day}>
-            <span className="daypill__k">Day {d.day}</span>
+            <span className="daypill__k">{t('day', lang)} {d.day}</span>
             <span className="daypill__v">{d.label}</span>
           </button>
         ))}
@@ -111,7 +111,7 @@ function DayNav({ days, active, onPick, stuck }) {
 }
 
 /* ---------------- Baby's rhythm reference ---------------- */
-function BabyRhythm({ trip }) {
+function BabyRhythm({ trip, lang = 'en' }) {
   const [open, setOpen] = uS(false);
   const r = trip.babyRoutine;
   return (
@@ -120,8 +120,8 @@ function BabyRhythm({ trip }) {
         <button className="rhythm__head" aria-expanded={open} onClick={() => setOpen(o => !o)} aria-controls="rhythm-body">
           <span className="rhythm__ic"><Icon name="baby" size={20} /></span>
           <span className="rhythm__t">
-            <span className="rhythm__title">Baby's daily rhythm</span>
-            <span className="rhythm__sub">The backbone every day is built on</span>
+            <span className="rhythm__title">{t('babyRhythm', lang)}</span>
+            <span className="rhythm__sub">{t('babyRhythmSub', lang)}</span>
           </span>
           <span className="rhythm__chev"><Icon name="chevronDown" size={18} /></span>
         </button>
@@ -148,14 +148,14 @@ function BabyRhythm({ trip }) {
 }
 
 /* ---------------- Budget summary (itemised ranges) ---------------- */
-function Budget({ trip }) {
+function Budget({ trip, lang = 'en' }) {
   const cur = trip.currency;
   return (
     <section className="block" data-screen-label="Budget">
       <header className="block__head">
-        <p className="eyebrow block__eyebrow">Money</p>
-        <h2 className="block__title">Trip budget</h2>
-        <p className="block__sub">Estimated, end to end. Lodging is already paid; everything else is a range.</p>
+        <p className="eyebrow block__eyebrow">{t('money', lang)}</p>
+        <h2 className="block__title">{t('tripBudget', lang)}</h2>
+        <p className="block__sub">{t('budgetSub', lang)}</p>
       </header>
       <div className="budget">
         <div className="budget__card">
@@ -163,37 +163,37 @@ function Budget({ trip }) {
             <div className="bline" key={i}>
               <span className="bline__label">{b.label}</span>
               {b.note && <span className="bline__note">{b.note}</span>}
-              {b.paid && <span className="bline__paid">Paid</span>}
+              {b.paid && <span className="bline__paid">{t('paid', lang)}</span>}
               <span className="bline__val">{b.value}</span>
             </div>
           ))}
           <div className="budget__total">
-            <span className="lbl">Total estimate</span>
+            <span className="lbl">{t('totalEstimate', lang)}</span>
             <span className="val">{cur} {trip.budget.estLow.toLocaleString('pt-BR')}–{trip.budget.estHigh.toLocaleString('pt-BR')}</span>
           </div>
         </div>
-        <p className="budget__note">Lodging {cur} {trip.budget.hotelPaid.toLocaleString('pt-BR')} already paid · ranges leave room for the day.</p>
+        <p className="budget__note">{t('budgetNote', lang, cur, trip.budget.hotelPaid.toLocaleString('pt-BR'))}</p>
       </div>
     </section>
   );
 }
 
 /* ---------------- Travel tips (from alerts) ---------------- */
-function Tips({ trip }) {
+function Tips({ trip, lang = 'en' }) {
   return (
     <section className="block" data-screen-label="Travel tips">
       <header className="block__head">
-        <p className="eyebrow block__eyebrow">Before you go</p>
-        <h2 className="block__title">Know before you go</h2>
-        <p className="block__sub">The non-negotiables for a cold-weather trip with a baby.</p>
+        <p className="eyebrow block__eyebrow">{t('beforeYouGo', lang)}</p>
+        <h2 className="block__title">{t('knowBeforeYouGo', lang)}</h2>
+        <p className="block__sub">{t('tipsSub', lang)}</p>
       </header>
       <div className="stack">
-        {trip.alerts.map((t, i) => (
+        {trip.alerts.map((al, i) => (
           <div className="tipcard" key={i}>
-            <span className="tipcard__ic"><Icon name={t.icon} size={20} /></span>
+            <span className="tipcard__ic"><Icon name={al.icon} size={20} /></span>
             <div>
-              <p className="tipcard__t">{t.title}</p>
-              <p className="tipcard__b">{t.body}</p>
+              <p className="tipcard__t">{al.title}</p>
+              <p className="tipcard__b">{al.body}</p>
             </div>
           </div>
         ))}
@@ -203,14 +203,14 @@ function Tips({ trip }) {
 }
 
 /* ---------------- Considered & cut ---------------- */
-function Skipped({ trip }) {
+function Skipped({ trip, lang = 'en' }) {
   const [open, setOpen] = uS(false);
   return (
     <section className="block" data-screen-label="Not this trip">
       <header className="block__head">
-        <p className="eyebrow block__eyebrow">Honest cuts</p>
-        <h2 className="block__title">Not on this trip</h2>
-        <p className="block__sub">Worthwhile places that don't fit a baby's pace this time.</p>
+        <p className="eyebrow block__eyebrow">{t('honestCuts', lang)}</p>
+        <h2 className="block__title">{t('notOnThisTrip', lang)}</h2>
+        <p className="block__sub">{t('skippedSub', lang)}</p>
       </header>
       <div className="stack">
         <div className="skipped">
@@ -226,7 +226,7 @@ function Skipped({ trip }) {
         </div>
         {trip.skipped.length > 3 && (
           <button className="expandbtn" style={{ flex: 'none' }} aria-expanded={open} onClick={() => setOpen(o => !o)}>
-            {open ? 'Show fewer' : `Show all ${trip.skipped.length}`} <Icon name="chevronDown" size={16} />
+            {open ? t('showFewer', lang) : t('showAll', lang, trip.skipped.length)} <Icon name="chevronDown" size={16} />
           </button>
         )}
       </div>
@@ -236,8 +236,13 @@ function Skipped({ trip }) {
 
 /* ---------------- App ---------------- */
 function App() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const trip = window.TRIP;
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  // lang: own state backed by localStorage, defaults to browser language
+  const [lang, setLang] = uS(() => {
+    try { return localStorage.getItem('urubici_lang') || DEFAULT_LANG; } catch(e) { return DEFAULT_LANG; }
+  });
+  uE(() => { try { localStorage.setItem('urubici_lang', lang); } catch(e) {} }, [lang]);
+  const trip = uM(() => localizeTrip(window.TRIP, lang), [lang]);
   const scrollRef = uR(null);
   const dayRefs = uR({});
   const [active, setActive] = uS(1);
@@ -273,14 +278,14 @@ function App() {
 
   // accent → derived vars (theme-aware via color-mix on --surface)
   const accentVars = uM(() => {
-    const a = t.accent;
+    const a = tw.accent;
     return {
       '--accent': a,
-      '--accent-ink': t.dark ? `color-mix(in srgb, ${a} 55%, white)` : `color-mix(in srgb, ${a} 80%, black)`,
+      '--accent-ink': tw.dark ? `color-mix(in srgb, ${a} 55%, white)` : `color-mix(in srgb, ${a} 80%, black)`,
       '--accent-soft': `color-mix(in srgb, ${a} 14%, var(--surface))`,
       '--accent-tint': `color-mix(in srgb, ${a} 8%, var(--surface))`,
     };
-  }, [t.accent, t.dark]);
+  }, [tw.accent, tw.dark]);
 
   // scale phone to fit viewport
   const [scale, setScale] = uS(1);
@@ -298,25 +303,25 @@ function App() {
     <div className="stage">
     <div className="phone" style={{ transform: `scale(${scale})` }}>
       <div className="phone__island" />
-      <StatusBar dark={stuck || t.dark} />
+      <StatusBar dark={stuck || tw.dark} />
       <div className="phone__home" />
-    <div className="app" data-theme={t.dark ? 'dark' : 'light'} style={accentVars}>
+    <div className="app" data-theme={tw.dark ? 'dark' : 'light'} style={accentVars}>
       <div className="scroll" ref={scrollRef}>
         <Hero trip={trip} scrollRef={scrollRef} />
-        <Summary trip={trip} />
+        <Summary trip={trip} lang={lang} />
         <div style={{ height: 18 }} />
-        <DayNav days={trip.days} active={active} onPick={pickDay} stuck={stuck} />
+        <DayNav days={trip.days} active={active} onPick={pickDay} stuck={stuck} lang={lang} />
         {trip.days.map(d => (
-          <DaySection key={d.day} day={d} cur={trip.currency} layout={t.timelineLayout}
-                      openLightbox={openLightbox} animate={t.animate} registerRef={registerRef} />
+          <DaySection key={d.day} day={d} cur={trip.currency} layout={tw.timelineLayout}
+                      openLightbox={openLightbox} animate={tw.animate} registerRef={registerRef} lang={lang} />
         ))}
-        <BabyRhythm trip={trip} />
-        <Budget trip={trip} />
-        <Tips trip={trip} />
-        <Skipped trip={trip} />
+        <BabyRhythm trip={trip} lang={lang} />
+        <Budget trip={trip} lang={lang} />
+        <Tips trip={trip} lang={lang} />
+        <Skipped trip={trip} lang={lang} />
         <footer className="footer">
           <p className="footer__mark">{trip.destination}</p>
-          <p className="footer__sub">{trip.region} · {trip.dates.label}<br />Have a wonderful trip.</p>
+          <p className="footer__sub">{trip.region} · {trip.dates.label}<br />{t('haveWonderful', lang)}</p>
         </footer>
         <div style={{ height: 24 }} />
       </div>
@@ -326,14 +331,18 @@ function App() {
     </div>
 
       <TweaksPanel>
-        <TweakSection label="Timeline layout" />
-        <TweakRadio label="Style" value={t.timelineLayout}
+        <TweakSection label={t('tlLayout', lang)} />
+        <TweakRadio label={t('styleLabel', lang)} value={tw.timelineLayout}
                     options={[{ value: 'edge', label: 'Edge' }, { value: 'right', label: 'Spine' }, { value: 'center', label: 'Center' }]}
                     onChange={(v) => setTweak('timelineLayout', v)} />
-        <TweakSection label="Theme" />
-        <TweakColor label="Accent" value={t.accent} options={ACCENTS} onChange={(v) => setTweak('accent', v)} />
-        <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak('dark', v)} />
-        <TweakToggle label="Entrance animation" value={t.animate} onChange={(v) => setTweak('animate', v)} />
+        <TweakSection label={t('themeLabel', lang)} />
+        <TweakColor label={t('accentLabel', lang)} value={tw.accent} options={ACCENTS} onChange={(v) => setTweak('accent', v)} />
+        <TweakToggle label={t('darkMode', lang)} value={tw.dark} onChange={(v) => setTweak('dark', v)} />
+        <TweakToggle label={t('entranceAnim', lang)} value={tw.animate} onChange={(v) => setTweak('animate', v)} />
+        <TweakSection label={t('languageLabel', lang)} />
+        <TweakRadio label="" value={lang}
+                    options={[{ value: 'en', label: 'English' }, { value: 'pt', label: 'Português' }]}
+                    onChange={(v) => setLang(v)} />
       </TweaksPanel>
     </div>
   );
