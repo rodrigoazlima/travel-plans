@@ -1,0 +1,12 @@
+{
+  "name": "travel-plans",
+  "version": "1.0.0",
+  "homepage": "https://rodrigoazlima.github.io/travel-plans",
+  "scripts": {
+    "predeploy": "echo 'Pre-deploy step complete'",
+    "deploy": "gh-pages -d ."
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}
