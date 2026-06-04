@@ -11,8 +11,52 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 
 const ACCENTS = ['#2f5d50', '#b2603a', '#3a4f8a', '#6b4e7d', '#1c1c1c'];
 
+/* ---------------- Language picker ---------------- */
+const LANGS = [
+  { code: 'en', flag: '🇺🇸', label: 'English' },
+  { code: 'pt', flag: '🇧🇷', label: 'Português' },
+];
+
+function LangPicker({ lang, onChange }) {
+  const [open, setOpen] = uS(false);
+  const ref = uR(null);
+  const cur = LANGS.find(l => l.code === lang) || LANGS[0];
+
+  uE(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  return (
+    <div className="langpicker" ref={ref}>
+      <button className="hero__chip langpicker__btn"
+              aria-haspopup="listbox" aria-expanded={open}
+              onClick={() => setOpen(o => !o)}>
+        <span aria-hidden="true">{cur.flag}</span>
+        <span>{cur.code.toUpperCase()}</span>
+        <Icon name="chevronDown" size={12} style={{ transition: 'transform .2s', transform: open ? 'rotate(180deg)' : 'none' }} />
+      </button>
+      {open && (
+        <ul className="langpicker__drop" role="listbox" aria-label="Language">
+          {LANGS.map(l => (
+            <li key={l.code} role="option" aria-selected={l.code === lang}>
+              <button className={'langpicker__opt' + (l.code === lang ? ' langpicker__opt--active' : '')}
+                      onClick={() => { onChange(l.code); setOpen(false); }}>
+                <span aria-hidden="true">{l.flag}</span>
+                <span>{l.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /* ---------------- Hero ---------------- */
-function Hero({ trip, scrollRef }) {
+function Hero({ trip, scrollRef, lang, onLangChange }) {
   const mediaRef = uR(null);
   uE(() => {
     const sc = scrollRef.current; if (!sc) return;
@@ -36,7 +80,10 @@ function Hero({ trip, scrollRef }) {
       <div className="hero__scrim" />
       <div className="hero__top">
         <span className="hero__chip"><Icon name="calendar" size={14} /> {trip.dates.label}</span>
-        <span className="hero__chip"><Icon name="sunCloud" size={15} /> {trip.weather.low}–{trip.weather.high}{trip.weather.unit}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className="hero__chip"><Icon name="sunCloud" size={15} /> {trip.weather.low}–{trip.weather.high}{trip.weather.unit}</span>
+          <LangPicker lang={lang} onChange={onLangChange} />
+        </div>
       </div>
       <div className="hero__body">
         <p className="hero__region">{trip.region}</p>
@@ -276,7 +323,7 @@ function App() {
   return (
     <div className="app" data-theme={tw.dark ? 'dark' : 'light'} style={accentVars}>
       <div className="scroll" ref={scrollRef}>
-        <Hero trip={trip} scrollRef={scrollRef} />
+        <Hero trip={trip} scrollRef={scrollRef} lang={lang} onLangChange={setLang} />
         <Summary trip={trip} lang={lang} />
         <div style={{ height: 18 }} />
         <DayNav days={trip.days} active={active} onPick={pickDay} stuck={stuck} lang={lang} />
@@ -306,10 +353,6 @@ function App() {
         <TweakColor label={t('accentLabel', lang)} value={tw.accent} options={ACCENTS} onChange={(v) => setTweak('accent', v)} />
         <TweakToggle label={t('darkMode', lang)} value={tw.dark} onChange={(v) => setTweak('dark', v)} />
         <TweakToggle label={t('entranceAnim', lang)} value={tw.animate} onChange={(v) => setTweak('animate', v)} />
-        <TweakSection label={t('languageLabel', lang)} />
-        <TweakRadio label="" value={lang}
-                    options={[{ value: 'en', label: 'English' }, { value: 'pt', label: 'Português' }]}
-                    onChange={(v) => setLang(v)} />
       </TweaksPanel>
     </div>
   );
